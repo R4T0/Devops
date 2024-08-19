@@ -1,0 +1,49 @@
+version: "3.7"
+
+services:
+  minio:
+    image: quay.io/minio/minio:RELEASE.2024-01-13T07-53-03Z-cpuv1 ## Versão do Minio
+    command: server /data --console-address ":9001"
+    networks:
+      - net0_app ## Nome da rede interna
+    volumes:
+      - minio_data:/data
+    environment:
+
+      ## Dados de acesso
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=!@pbxaRta!
+
+      ## Url do minio
+      - MINIO_BROWSER_REDIRECT_URL=https://storage.dualtecms.com.br ## Url do minio
+      - MINIO_SERVER_URL=https://storagetp.dualtecms.com.br ## Url do s3
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.minio_public.rule=Host(`storagetp.dualtecms.com.br`) ## Url do s3
+        - traefik.http.routers.minio_public.entrypoints=websecure
+        - traefik.http.routers.minio_public.tls.certresolver=letsencryptresolver
+        - traefik.http.services.minio_public.loadbalancer.server.port=9000
+        - traefik.http.services.minio_public.loadbalancer.passHostHeader=true
+        - traefik.http.routers.minio_public.service=minio_public
+        - traefik.http.routers.minio_console.rule=Host(`storage.dualtecms.com.br`) ## Url do minio
+        - traefik.http.routers.minio_console.entrypoints=websecure
+        - traefik.http.routers.minio_console.tls.certresolver=letsencryptresolver
+        - traefik.http.services.minio_console.loadbalancer.server.port=9001
+        - traefik.http.services.minio_console.loadbalancer.passHostHeader=true
+        - traefik.http.routers.minio_console.service=minio_console
+volumes:
+  minio_data:
+    external: true
+    
+
+networks:
+  net0_app: ## Nome da rede interna
+    external: true
+    
