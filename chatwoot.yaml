@@ -1,0 +1,124 @@
+version: "3.8"
+
+#https://www.chatwoot.com/docs/self-hosted/deployment/docker/
+#command: bundle exec rails db:chatwoot_prepare (Disponível na documentação)
+#mais infomacoes como fazer o deploy em: youtube.com/@aprendanawebbr
+
+services:
+  chatwoot_app:
+    image: chatwoot/chatwoot:latest
+    command: bundle exec rails s -p 3000 -b 0.0.0.0
+    #command: bundle exec rails db:chatwoot_prepare
+    entrypoint: docker/entrypoints/rails.sh
+    volumes:
+      - chatwoot_data:/app/storage
+    networks:
+      - traefik_public
+      - net0_app
+    environment:
+      INSTALLATION_NAME: dualtec
+      NODE_ENV: production
+      RAILS_ENV: production
+      INSTALLATION_ENV: docker
+      SECRET_KEY_BASE: 545d76231e931f1349eda9d627335b36
+      FRONTEND_URL: https://chat.dualtecms.com.br
+      DEFAULT_LOCALE: pt_BR
+      FORCE_SSL: "true"
+      ENABLE_ACCOUNT_SIGNUP: "false"
+      REDIS_URL: redis://redis:6379
+      # Banco de dados
+      POSTGRES_HOST: postgres
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: 123@dualtec
+      POSTGRES_DATABASE: chatwoot
+      # Armazenamento
+      ACTIVE_STORAGE_SERVICE: local
+      # logs
+      RAILS_LOG_TO_STDOUT: "true"
+      # Avatar Bot
+      USE_INBOX_AVATAR_FOR_BOT: "true"
+      #performance
+      SIDEKIQ_CONCURRENCY: 10
+      RACK_TIMEOUT_SERVICE_TIMEOUT: 0
+      #- RAILS_MAX_THREADS=5
+      #- WEB_CONCURRENCY=2
+      ENABLE_RACK_ATTACK: "false"
+      TZ: America/Campo_Grande
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1024M
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.chatwoot_app.rule=Host(`chat.dualtecms.com.br`)
+        - traefik.http.routers.chatwoot_app.entrypoints=websecure
+        - traefik.http.routers.chatwoot_app.tls.certresolver=le
+        - traefik.http.routers.chatwoot_app.service=chatwoot_app
+        - traefik.http.services.chatwoot_app.loadbalancer.server.port=3000
+        - traefik.http.middlewares.chatwoot_sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
+        - traefik.http.routers.chatwoot_app.middlewares=chatwoot_sslheader
+
+  #worker (Trabalhador que executa os processos)
+  chatwoot_worker:
+    image: chatwoot/chatwoot:latest
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    volumes:
+      - chatwoot_data:/app/storage
+    networks:
+      - net0_app
+    environment:
+      INSTALLATION_NAME: dualtec
+      NODE_ENV: production
+      RAILS_ENV: production
+      INSTALLATION_ENV: docker
+      SECRET_KEY_BASE: 545d76231e931f1349eda9d627335b36
+      FRONTEND_URL: https://chat.dualtecms.com.br
+      DEFAULT_LOCALE: pt_BR
+      FORCE_SSL: "true"
+      ENABLE_ACCOUNT_SIGNUP: "false"
+      REDIS_URL: redis://redis:6379
+      # Banco de dados
+      POSTGRES_HOST: postgres
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: 123@dualtec
+      POSTGRES_DATABASE: chatwoot
+      # Armazenamento
+      ACTIVE_STORAGE_SERVICE: local
+      # logs
+      RAILS_LOG_TO_STDOUT: "true"
+      # Avatar Bot
+      USE_INBOX_AVATAR_FOR_BOT: "true"
+      #performance
+      SIDEKIQ_CONCURRENCY: 10
+      RACK_TIMEOUT_SERVICE_TIMEOUT: 0
+      #- RAILS_MAX_THREADS=5
+      #- WEB_CONCURRENCY=2
+      ENABLE_RACK_ATTACK: "false"
+      TZ: America/Campo_Grande
+      #Mesmas VARIAVEIS do Chatwoot App
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1024M
+
+volumes:
+  chatwoot_data:
+    external: true
+
+networks:
+  traefik_public:
+    external: true
+  net0_app:
+    external: true
