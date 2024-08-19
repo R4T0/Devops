@@ -7,7 +7,7 @@ services:
     networks:
       - traefik_public
     environment:
-      - SERVER_URL=https://evo.dualtecms.com.br
+      - SERVER_URL=https://evolution.dualtecms.com.br
       - DEL_INSTANCE=false
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=postgresql://postgres:SENHA@postgres:5432/evolution
@@ -125,7 +125,7 @@ services:
           - node.hostname == evolution-manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.evolution_v2.rule=Host(evo.dualtecms.com.br`)
+        - traefik.http.routers.evolution_v2.rule=Host(evolution.dualtecms.com.br`)
         - traefik.http.routers.evolution_v2.entrypoints=websecure
         - traefik.http.routers.evolution_v2.tls.certresolver=letsencryptresolver
         - traefik.http.routers.evolution_v2.priority=1
