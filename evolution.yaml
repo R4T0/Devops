@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  evolution_api:
+    #image: atendai/evolution-api:v1.8.2
+    image: sendingtk/evolution-api:v1.8.2
+    command: ["node", "./dist/src/main.js"]
+    #command: npm install @whiskeysockets/baileys@zennn08/Baileys#profile-picture-url
+    networks:
+      - traefik_public
+      - net0_app
+    volumes:
+      - eapi_instances:/evolution/instances
+      - eapi_store:/evolution/store
+    environment:
+      SERVER_URL: https://evolution.dualtecms.com.br
+      CONFIG_SESSION_PHONE_CLIENT: EvolutionAPI
+      AUTHENTICATION_TYPE: apikey
+      AUTHENTICATION_API_KEY: 3f4c1c084289c426f18e0fc30f7b3cc6
+      # Permanent data storage MongoDB
+      DATABASE_ENABLED: "true"
+      DATABASE_CONNECTION_URI: mongodb://evolution:evolutionapi@mongodb:27017/?authSource=admin&readPreference=primary&ssl=false&directConnection=true
+      DATABASE_CONNECTION_DB_PREFIX_NAME: evolution
+      # Choose the data you want to save in the application's database or store
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "false"
+      DATABASE_SAVE_DATA_CONTACTS: "false"
+      DATABASE_SAVE_DATA_CHATS: "false"
+      #Typebot
+      TYPEBOT_START: "false"
+      TYPEBOT_CHANGE_STATUS: "false"
+      API_VERSION: "old"
+      KEEP_OPEN: "false"
+      #logs definição
+      LOG_LEVEL: ERROR,WARN
+      # config adicional
+      DEL_INSTANCE: "false"
+      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "true"
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.4"
+          memory: 600M
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.evolution_api.rule=Host(`evolution.dualtecms.com.br`)
+        - traefik.http.routers.evolution_api.entrypoints=websecure
+        - traefik.http.routers.evolution_api.tls.certresolver=le
+        - traefik.http.routers.evolution_api.service=evolution_api
+        - traefik.http.services.evolution_api.loadbalancer.server.port=8080
+
+networks:
+  traefik_public:
+    external: true
+  net0_app:
+    external: true
+
+volumes:
+  eapi_instances:
+    external: true
+  eapi_store:
+    external: true
