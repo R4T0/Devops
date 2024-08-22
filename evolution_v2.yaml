@@ -1,11 +1,12 @@
 version: "3.7"
 services:
   evolution_v2:
-    image: atendai/evolution-api:v2.0.9
+    image: atendai/evolution-api:v2.0.10
     volumes:
       - evolution_instances:/evolution/instances
     networks:
       - traefik_public
+      - net0_app
     environment:
       - SERVER_URL=https://evolution.dualtecms.com.br
       - DEL_INSTANCE=false
@@ -48,11 +49,11 @@ services:
       - RABBITMQ_EVENTS_CALL=false
       - RABBITMQ_EVENTS_TYPEBOT_START=false
       - RABBITMQ_EVENTS_TYPEBOT_CHANGE_STATUS=false
-      - SQS_ENABLED=false
-      - SQS_ACCESS_KEY_ID=
-      - SQS_SECRET_ACCESS_KEY=
-      - SQS_ACCOUNT_ID=
-      - SQS_REGION=
+      #- SQS_ENABLED=false
+      #- SQS_ACCESS_KEY_ID=
+      #- SQS_SECRET_ACCESS_KEY=
+      #- SQS_ACCOUNT_ID=
+      #- SQS_REGION=
       - WEBSOCKET_ENABLED=false
       - WEBSOCKET_GLOBAL_EVENTS=false
       - WA_BUSINESS_TOKEN_WEBHOOK=evolution
@@ -90,12 +91,12 @@ services:
       - WEBHOOK_EVENTS_ERRORS=false
       - WEBHOOK_EVENTS_ERRORS_WEBHOOK=
       - CONFIG_SESSION_PHONE_CLIENT=Evolution API
-      - CONFIG_SESSION_PHONE_NAME=Chrome
+      - CONFIG_SESSION_PHONE_NAME=Evo
       - CONFIG_SESSION_PHONE_VERSION=2.2413.51
       - QRCODE_LIMIT=30
-      - OPENAI_ENABLED=true
+      - OPENAI_ENABLED=false
       - DIFY_ENABLED=false
-      - TYPEBOT_ENABLED=true
+      - TYPEBOT_ENABLED=enable
       - TYPEBOT_API_VERSION=latest
       - CHATWOOT_ENABLED=true
       - CHATWOOT_MESSAGE_READ=true
@@ -103,11 +104,12 @@ services:
       - CHATWOOT_IMPORT_DATABASE_CONNECTION_URI=postgresql://postgres:123@dualtec@postgres:5432/chatwoot?sslmode=disable
       - CHATWOOT_IMPORT_PLACEHOLDER_MEDIA_MESSAGE=true
       - CACHE_REDIS_ENABLED=true
-      - CACHE_REDIS_URI=redis://evo_redis:6379/1
-      - CACHE_REDIS_PREFIX_KEY=evolution_v2
-      - CACHE_REDIS_SAVE_INSTANCES=false
+      #- CACHE_REDIS_URI=redis://redis:6379/1
+      - CACHE_REDIS_URI=redis://redis:6379
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_REDIS_SAVE_INSTANCES=true
       - CACHE_LOCAL_ENABLED=false
-      - S3_ENABLED=true
+      - S3_ENABLED=false
       - S3_ACCESS_KEY=
       - S3_SECRET_KEY=
       - S3_BUCKET=evolution
@@ -122,16 +124,14 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.hostname == evolution-manager
+          - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.evolution_v2.rule=Host(evolution.dualtecms.com.br`)
-        - traefik.http.routers.evolution_v2.entrypoints=websecure
-        - traefik.http.routers.evolution_v2.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.evolution_v2.priority=1
-        - traefik.http.routers.evolution_v2.service=evolution_v2
-        - traefik.http.services.evolution_v2.loadbalancer.server.port=8080
-        - traefik.http.services.evolution_v2.loadbalancer.passHostHeader=true
+        - traefik.http.routers.evolution_api.rule=Host(`evolution.dualtecms.com.br`)
+        - traefik.http.routers.evolution_api.entrypoints=websecure
+        - traefik.http.routers.evolution_api.tls.certresolver=le
+        - traefik.http.routers.evolution_api.service=evolution_api
+        - traefik.http.services.evolution_api.loadbalancer.server.port=8080
 
 volumes:
   evolution_instances:
@@ -140,5 +140,7 @@ volumes:
 
 networks:
   traefik_public:
+    external: true
+  net0_app:
     external: true
    
