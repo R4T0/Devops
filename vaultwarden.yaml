@@ -1,0 +1,32 @@
+version: '3.7'
+
+services:
+  bitwarden:
+    image: vaultwarden/server:latest
+    container_name: bitwarden
+    volumes:
+      - bitwarden-data:/data
+      - bitwarden-config:/config
+    #ports:
+     # - 80:80
+     # - 443:443
+    environment:
+      WEBSOCKET_ENABLED: "true"  # Ativar WebSockets
+      ADMIN_TOKEN: GERARTOKEN
+     #- DOMAIN: ${DOMAIN}
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - agent_network
+
+volumes:
+  bitwarden-data:
+    external: true
+  bitwarden-config:
+    external: true
+
+networks:
+ agent_network:
+    external: true
