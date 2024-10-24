@@ -1,0 +1,43 @@
+version: "3.8"
+################################################################
+##               by:"R4T0" https://github.com/R4T0            ##
+##                       24/10/2024                           ##
+################################################################
+
+services:
+  baserow:
+    image: baserow/baserow:latest
+    networks:
+      - agent_network
+    volumes:
+      - baserow_data:/baserow/data
+    environment:
+      BASEROW_PUBLIC_URL: http://seu.site.com
+      DATABASE_HOST: postgres
+      DATABASE_NAME: baserow
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: Senhaqui
+      #BASEROW_TRIGGER_SYNC_TEMPLATES_AFTER_MIGRATION: "false"
+      BASEROW_ROW_PAGE_SIZE_LIMIT: 200
+      BATCH_ROWS_SIZE_LIMIT: 200
+      
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 2024M
+
+
+volumes:
+  baserow_data:
+    external: true
+
+
+networks:
+  agent_network:
+    external: true
