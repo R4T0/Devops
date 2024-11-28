@@ -1,0 +1,11 @@
+Usando Rollback no SQL
+begin; -- Ativa o modo de recuperação
+update contacts 
+set identifier = 'oi@oi.com.br'
+where account_id = '7' and id = '2';
+
+select * from contacts where account_id =7; -- Visualizar a alteração antes de salvar
+
+commit; -- Para salvar as mudanças
+--\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\--
+rollback;-- Para reverter as mudanças
