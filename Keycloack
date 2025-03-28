@@ -1,0 +1,19 @@
+version: "3.8"
+keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: senhadb
+      KEYCLOAK_ADMIN: keyadmin
+      KEYCLOAK_ADMIN_PASSWORD: senhaadmin
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+    command:
+      - start
+      #- start-dev //para homologação
+    ports:
+      - "8089:8080"
