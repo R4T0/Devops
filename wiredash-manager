@@ -1,0 +1,63 @@
+version: '3.8'
+################################################################
+##               by:"R4T0" https://github.com/CloudDualtec    ##
+##                       31/07/2025                           ##
+################################################################
+
+services:
+  backend:
+    image: dg95/wiredash-backend:1.0.0
+    environment:
+      - FLASK_ENV=production
+      - DB_PATH=/app/data/wireguard_manager.db
+      - LOG_LEVEL=INFO
+    volumes:
+      - wireguard-db:/app/data
+      - wireguard-logs:/app/logs
+    ports:
+      - "5000:5000" 
+    networks:
+      - agent_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  wiredash:
+    image: dg95/wiredash-front:1.0.0
+    networks:
+      - agent_network
+    ports:
+      - "3002:80"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+networks:
+  agent_network:
+    external: true
+
+volumes:
+  wireguard-db:
+    external: true
+  wireguard-logs:
+    external: true
+    
