@@ -1,0 +1,15 @@
+ENTRAR NA PASTA DO PROJETO ONDE TEM O Dockerfile
+  'docker build -t dg95/wiredash-front:1.0.2 .'
+
+APÓS A CONSTRUÇÃO VERIFICAR SE A IMAGEM EXISTE COM A TAG 1.0.2
+  'docker images'
+
+ENVIO (PUSH) PARA O DOCKER HUB
+  'docker push dg95/wiredash-front:1.0.2'
+
+PUBLICAR A IMAGEM COMO LATEST
+  'docker tag dg95/wiredash-front:1.0.2 dg95/wiredash-front:latest'
+  'docker tag dg95/wiredash-backend:1.0.2 dg95/wiredash-backend:latest'
+DOCKER PUSH
+  'docker push dg95/wiredash-front:latest'
+  'docker push dg95/wiredash-backend:latest'
