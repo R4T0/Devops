@@ -6,7 +6,7 @@ version: '3.8'
 
 services:
   backend:
-    image: dg95/wiredash-backend:1.0.0
+    image: dg95/wiredash-backend:latest
     environment:
       - FLASK_ENV=production
       - DB_PATH=/app/data/wireguard_manager.db
@@ -35,7 +35,7 @@ services:
       start_period: 40s
 
   wiredash:
-    image: dg95/wiredash-front:1.0.0
+    image: dg95/wiredash-front:latest
     networks:
       - agent_network
     ports:
